@@ -7,9 +7,43 @@
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
 
-<h2>REPORTE CLIENTES</h2>
+<h2>REPORTES GESTOR INVENTARIO</h2>
 <hr />
 
-<form asp-action="ExportarExcel" asp-controller="Reportes" method="post">
-    <button type="submit" class="btn btn-primary">Exportar a Excel</button>
+<form id="formReporte" method="post">
+    <div class="d-flex align-items-center gap-3">
+        <select id="comboReportes" class="form-select w-auto">
+            <option value="" disabled selected>-- Seleccione un reporte --</option>
+            <option value="vw_ProductosBajoStock">Productos Bajo Stock</option>
+            <option value="vw_VentasPorMes">Ventas por Mes</option>
+            <option value="vw_ProductosMasVendidos">Productos Más Vendidos</option>
+            <option value="vw_RentabilidadProducto">Rentabilidad por Producto</option>
+            <option value="vw_ComprasPorProveedor">Compras por Proveedor</option>
+            <option value="vw_MovimientosInventario">Movimientos de Inventario</option>
+            <option value="vw_ProductosProximosCaducar">Productos Próximos a Caducar</option>
+            <option value="vw_ActividadUsuarios">Actividad de Usuarios</option>
+            <option value="vw_ValorizacionInventario">Valorización de Inventario</option>
+            <option value="vw_ComparativoCompraVenta">Comparativo Compras vs Ventas</option>
+        </select>
+
+        <button type="button" class="btn btn-success" onclick="generarReporte()">
+            Exportar a Excel
+        </button>
+    </div>
 </form>
+
+@section Scripts {
+    <script>
+        function generarReporte() {
+            const combo = document.getElementById("comboReportes");
+            const accion = combo.value;
+
+            if (!accion) {
+                alert("Por favor seleccione un reporte.");
+                return;
+            }
+
+            window.location.href = `/Reportes/${accion}`;
+        }
+    </script>
+}

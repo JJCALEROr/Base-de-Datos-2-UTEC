@@ -2514,11 +2514,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\josjo\\source\\repos\\PruebaReportes\\PruebaReportes\\PruebaReportes.csproj",
+      "projectUniqueName": "C:\\Users\\josjo\\Documents\\Base-de-Datos-2-UTEC\\PruebaReportes\\PruebaReportes.csproj",
       "projectName": "PruebaReportes",
-      "projectPath": "C:\\Users\\josjo\\source\\repos\\PruebaReportes\\PruebaReportes\\PruebaReportes.csproj",
+      "projectPath": "C:\\Users\\josjo\\Documents\\Base-de-Datos-2-UTEC\\PruebaReportes\\PruebaReportes.csproj",
       "packagesPath": "C:\\Users\\josjo\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\josjo\\source\\repos\\PruebaReportes\\PruebaReportes\\obj\\",
+      "outputPath": "C:\\Users\\josjo\\Documents\\Base-de-Datos-2-UTEC\\PruebaReportes\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

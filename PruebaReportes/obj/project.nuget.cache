@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "4WYDR9BZPTY=",
+  "dgSpecHash": "0gz4UP/epTs=",
   "success": true,
-  "projectFilePath": "C:\\Users\\josjo\\source\\repos\\PruebaReportes\\PruebaReportes\\PruebaReportes.csproj",
+  "projectFilePath": "C:\\Users\\josjo\\Documents\\Base-de-Datos-2-UTEC\\PruebaReportes\\PruebaReportes.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\josjo\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\josjo\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",

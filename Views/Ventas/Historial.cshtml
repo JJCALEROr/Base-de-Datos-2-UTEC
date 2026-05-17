@@ -1,0 +1,64 @@
+﻿@model IEnumerable<InventarioVentasMVC.Models.Reportes.VentaDetalleView>
+
+<h2>Historial de Ventas</h2>
+
+<table class="table table-bordered">
+
+    <thead>
+        <tr>
+            <th>Número</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Vendedor</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>@item.NumeroVenta</td>
+
+                <td>
+                    @item.Fecha.ToString("dd/MM/yyyy HH:mm")
+                </td>
+
+                <td>@item.Cliente</td>
+
+                <td>@item.Vendedor</td>
+
+                <td>$@item.Total</td>
+
+                <td>@item.Estado</td>
+
+                <td>
+
+                    <a asp-action="Detalle"
+                       asp-route-id="@item.VentaId"
+                       class="btn btn-info btn-sm">
+
+                        Ver Detalle
+
+                    </a>
+
+                    <a asp-action="GenerarPDF"
+                       asp-route-id="@item.VentaId"
+                       class="btn btn-danger btn-sm">
+
+                        PDF
+
+                    </a>
+
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>

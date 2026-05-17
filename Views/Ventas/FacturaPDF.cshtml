@@ -1,0 +1,66 @@
+﻿@model IEnumerable<InventarioVentasMVC.Models.Reportes.DetalleVentaCompletoView>
+
+@{
+    Layout = null;
+}
+
+<h1>FACTURA</h1>
+
+<hr />
+
+<p>
+    Fecha:
+    @Model.FirstOrDefault()?.Fecha.ToString("dd/MM/yyyy")
+</p>
+
+<p>
+    Cliente:
+    @Model.FirstOrDefault()?.Cliente
+</p>
+
+<p>
+    Venta:
+    @Model.FirstOrDefault()?.NumeroVenta
+</p>
+
+<table border="1"
+       width="100%"
+       cellspacing="0"
+       cellpadding="5">
+
+    <thead>
+
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Subtotal</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>@item.Producto</td>
+
+                <td>@item.Cantidad</td>
+
+                <td>$@item.PrecioUnitario</td>
+
+                <td>$@item.Subtotal</td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>
+
+<h3>
+    Total:
+    $@Model.Sum(x => x.Subtotal)
+</h3>

@@ -1,0 +1,27 @@
+﻿@model InventarioVentasMVC.Models.Producto
+
+@{
+    ViewData["Title"] = "Detalles del Producto";
+}
+
+<h2 class="mb-4">Detalles del Producto</h2>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h4>@Model.Nombre (@Model.Codigo)</h4>
+    </div>
+    <div class="card-body">
+        <p><strong>Descripción:</strong> @Model.Descripcion</p>
+        <p><strong>Precio Compra:</strong> @Model.PrecioCompra.ToString("C")</p>
+        <p><strong>Precio Venta:</strong> @Model.PrecioVenta.ToString("C")</p>
+        <p><strong>Stock:</strong> @Model.Stock</p>
+        <p><strong>Stock Mínimo:</strong> @Model.StockMinimo</p>
+        <p><strong>Activo:</strong> @(Model.Activo ? "Sí" : "No")</p>
+        <p><strong>Fecha Creación:</strong> @Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</p>
+    </div>
+    <div class="card-footer">
+        <a asp-action="Edit" asp-route-id="@Model.ProductoId" class="btn btn-warning">Editar</a>
+        <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+    </div>
+</div>
+

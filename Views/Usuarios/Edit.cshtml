@@ -1,0 +1,81 @@
+@model InventarioVentasMVC.Models.Usuario
+
+@{
+    ViewData["Title"] = "Editar Usuario";
+}
+
+<h1>Editar Usuario</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+
+        <form asp-action="Edit">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input type="hidden" asp-for="UsuarioId" />
+
+            <div class="form-group mb-3">
+                <label asp-for="Nombre" class="control-label"></label>
+                <input asp-for="Nombre" class="form-control" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Apellido" class="control-label"></label>
+                <input asp-for="Apellido" class="form-control" />
+                <span asp-validation-for="Apellido" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Username" class="control-label"></label>
+                <input asp-for="Username" class="form-control" />
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="PasswordHash" class="control-label"></label>
+                <input asp-for="PasswordHash" type="password" class="form-control" />
+                <span asp-validation-for="PasswordHash" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Rol" class="control-label"></label>
+
+                <select asp-for="Rol" class="form-control">
+                    <option value="Admin">Admin</option>
+                    <option value="Vendedor">Vendedor</option>
+                    <option value="Bodeguero">Bodeguero</option>
+                </select>
+
+                <span asp-validation-for="Rol" class="text-danger"></span>
+            </div>
+
+            <div class="form-group form-check mb-3">
+                <input asp-for="Activo" class="form-check-input" />
+                <label asp-for="Activo" class="form-check-label"></label>
+            </div>
+
+            <div class="form-group mt-3">
+                <input type="submit"
+                       value="Guardar Cambios"
+                       class="btn btn-warning" />
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+                    Volver al listado
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

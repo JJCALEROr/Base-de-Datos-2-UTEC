@@ -1,0 +1,57 @@
+﻿@model IEnumerable<InventarioVentasMVC.Models.Reportes.DetalleVentaCompletoView>
+
+<h2>Detalle de Venta</h2>
+
+<table class="table table-striped">
+
+    <thead>
+
+        <tr>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Subtotal</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>
+                    @item.Producto
+                </td>
+
+                <td>
+                    @item.Categoria
+                </td>
+
+                <td>
+                    @item.Cantidad
+                </td>
+
+                <td>
+                    $@item.PrecioUnitario
+                </td>
+
+                <td>
+                    $@item.Subtotal
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>
+
+<a asp-action="Historial"
+   class="btn btn-secondary">
+
+    Volver
+
+</a>

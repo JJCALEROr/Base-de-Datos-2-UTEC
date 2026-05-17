@@ -1,0 +1,60 @@
+﻿@model InventarioVentasMVC.Models.Reportes.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h1 class="mb-4">Dashboard Administrativo</h1>
+
+<div class="row">
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5>Ventas Hoy</h5>
+                <h2>@Model.VentasHoy</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5>Ingresos Hoy</h5>
+                <h2>$@Model.IngresoHoy</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5>Stock Bajo</h5>
+                <h2>@Model.ProductosStockBajo</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-dark">
+            <div class="card-body">
+                <h5>Productos</h5>
+                <h2>@Model.TotalProductos</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row">
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5>Clientes</h5>
+                <h2>@Model.TotalClientes</h2>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -274,6 +274,83 @@
                             </li>
                         }
 
+                    <!-- ========================================= -->
+                    <!-- REPORTERIA -->
+                    <!-- ========================================= -->
+                            @if (User.IsInRole("Admin"))
+                            {
+                               
+                                <li class="nav-item dropdown">
+                            <a class="nav-link text-dark dropdown-toggle" href="#" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                📊 Reportes
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Reportes" asp-action="vw_ProductosBajoStock">
+                                        📦 Productos bajo stock
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Reportes" asp-action="vw_VentasPorMes">
+                                        📅 Ventas por mes
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Reportes" asp-action="vw_ProductosMasVendidos">
+                                        🏆 Productos más vendidos
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Reportes" asp-action="vw_RentabilidadProducto">
+                                        💰 Rentabilidad por producto
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Reportes" asp-action="vw_ComprasPorProveedor">
+                                        🚚 Compras por proveedor
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Reportes" asp-action="vw_MovimientosInventario">
+                                        🔄 Movimientos de inventario
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Reportes" asp-action="vw_ProductosSinMovimiento">
+                                        ⚠️ Productos sin movimiento
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Reportes" asp-action="vw_ActividadUsuarios">
+                                        👥 Actividad de usuarios
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Reportes" asp-action="vw_ValorizacionInventario">
+                                        🗂️ Valorización del inventario
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Reportes" asp-action="vw_ComparativoCompraVenta">
+                                        📊 Comparativo compra vs venta
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                            
+                            }    
+                            
                     </ul>
 
                     <!-- ========================================= -->

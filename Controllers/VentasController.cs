@@ -7,10 +7,13 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Text.Json;
 using Rotativa.AspNetCore;
+using Microsoft.AspNetCore.Authorization;
+
 
 
 namespace InventarioVentasMVC.Controllers
 {
+    [Authorize(Roles = "Admin,Vendedor")]
     public class VentasController : Controller
     {
         private readonly InventarioContext _context;

@@ -5,9 +5,13 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using System.Text.Json;
+using Rotativa.AspNetCore;
+
+using Microsoft.AspNetCore.Authorization;
 
 namespace InventarioVentasMVC.Controllers
 {
+    [Authorize(Roles = "Admin,Bodeguero")]
     public class ComprasController : Controller
     {
         private readonly InventarioContext _context;
@@ -80,33 +84,46 @@ namespace InventarioVentasMVC.Controllers
         // =====================================================
         // AGREGAR PRODUCTO
         // =====================================================
-
         [HttpPost]
         public async Task<IActionResult> AgregarProducto(
             int productoId,
             int cantidad,
-            decimal precioCompra)
+            decimal precioCompra,
+            int proveedorId,
+            int usuarioId,
+            string observaciones)
         {
+            // =========================================
+            // VALIDAR PRODUCTO
+            // =========================================
+
             var producto = await _context.Productos
                 .FirstOrDefaultAsync(p => p.ProductoId == productoId);
 
             if (producto == null)
             {
                 TempData["Error"] = "Producto no encontrado.";
+
                 return RedirectToAction(nameof(Index));
             }
 
             if (cantidad <= 0)
             {
                 TempData["Error"] = "Cantidad inválida.";
+
                 return RedirectToAction(nameof(Index));
             }
 
             if (precioCompra <= 0)
             {
                 TempData["Error"] = "Precio inválido.";
+
                 return RedirectToAction(nameof(Index));
             }
+
+            // =========================================
+            // AGREGAR AL CARRITO
+            // =========================================
 
             var itemExistente = carrito
                 .FirstOrDefault(p => p.ProductoId == productoId);
@@ -114,6 +131,7 @@ namespace InventarioVentasMVC.Controllers
             if (itemExistente != null)
             {
                 itemExistente.Cantidad += cantidad;
+
                 itemExistente.PrecioCompra = precioCompra;
             }
             else
@@ -129,8 +147,57 @@ namespace InventarioVentasMVC.Controllers
 
             TempData["Success"] = "Producto agregado.";
 
-            return RedirectToAction(nameof(Index));
+            // =========================================
+            // RECARGAR COMBOS
+            // =========================================
+
+            ViewData["ProveedorId"] = new SelectList(
+                await _context.Proveedores
+                    .Where(p => p.Activo)
+                    .ToListAsync(),
+                "ProveedorId",
+                "RazonSocial",
+                proveedorId
+            );
+
+            ViewData["UsuarioId"] = new SelectList(
+                await _context.Usuarios
+                    .Where(u => u.Activo)
+                    .ToListAsync(),
+                "UsuarioId",
+                "Username",
+                usuarioId
+            );
+
+            // =========================================
+            // PRODUCTOS FILTRADOS POR PROVEEDOR
+            // =========================================
+
+            ViewData["Productos"] = await _context.Productos
+                .Where(p =>
+                    p.Activo &&
+                    p.ProveedorId == proveedorId)
+                .ToListAsync();
+
+            // =========================================
+            // RECONSTRUIR VIEWMODEL
+            // =========================================
+
+            var vm = new CompraViewModel
+            {
+                ProveedorId = proveedorId,
+                UsuarioId = usuarioId,
+                Observaciones = observaciones,
+                Carrito = carrito
+            };
+
+            // =========================================
+            // RETORNAR MISMA VISTA
+            // =========================================
+
+            return View("Index", vm);
         }
+
 
         // =====================================================
         // ELIMINAR PRODUCTO
@@ -157,6 +224,20 @@ namespace InventarioVentasMVC.Controllers
         public async Task<IActionResult> GuardarCompra(
             CompraViewModel vm)
         {
+            var usuarioIdClaim = User.FindFirst("UsuarioId");
+
+            if (usuarioIdClaim == null)
+            {
+                TempData["Error"] = "Sesión inválida.";
+
+                return RedirectToAction(
+                    "Login",
+                    "Account"
+                );
+            }
+
+            vm.UsuarioId = int.Parse(usuarioIdClaim.Value);
+
             if (!carrito.Any())
             {
                 TempData["Error"] = "El carrito está vacío.";
@@ -243,6 +324,83 @@ namespace InventarioVentasMVC.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // =====================================================
+        // HISTORIAL
+        // =====================================================
+
+        public async Task<IActionResult> Historial()
+        {
+            var compras = await _context.Compras
+
+                .Include(c => c.Proveedor)
+
+                .Include(c => c.Usuario)
+
+                .OrderByDescending(c => c.Fecha)
+
+                .ToListAsync();
+
+            return View(compras);
+        }
+
+        // =====================================================
+        // DETALLE
+        // =====================================================
+
+        public async Task<IActionResult> Detalle(int id)
+        {
+            var compra = await _context.Compras
+
+                .Include(c => c.Proveedor)
+
+                .Include(c => c.Usuario)
+
+                .Include(c => c.DetalleCompras)
+
+                    .ThenInclude(d => d.Producto)
+
+                .FirstOrDefaultAsync(c => c.CompraId == id);
+
+            if (compra == null)
+            {
+                return NotFound();
+            }
+
+            return View(compra);
+        }
+
+        // =====================================================
+        // PDF
+        // =====================================================
+
+        public async Task<IActionResult> GenerarPDF(int id)
+        {
+            var compra = await _context.Compras
+
+                .Include(c => c.Proveedor)
+
+                .Include(c => c.Usuario)
+
+                .Include(c => c.DetalleCompras)
+
+                    .ThenInclude(d => d.Producto)
+
+                .FirstOrDefaultAsync(c => c.CompraId == id);
+
+            if (compra == null)
+            {
+                return NotFound();
+            }
+
+            return new ViewAsPdf(
+                "Detalle",
+                compra
+            )
+            {
+                FileName = $"Compra_{compra.CompraId}.pdf"
+            };
         }
     }
 }

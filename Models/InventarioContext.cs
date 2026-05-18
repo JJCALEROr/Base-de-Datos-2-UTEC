@@ -10,7 +10,10 @@ namespace InventarioVentasMVC.Models
         {
         }
 
+        // =====================================================
         // TABLAS
+        // =====================================================
+
         public DbSet<Producto> Productos { get; set; }
 
         public DbSet<Categoria> Categorias { get; set; }
@@ -33,14 +36,33 @@ namespace InventarioVentasMVC.Models
 
         public DbSet<AuditoriaLog> AuditoriaLogs { get; set; }
 
+        // =====================================================
         // VISTAS SQL
+        // =====================================================
+
         public DbSet<VentaDetalleView> VentasDetalleView { get; set; }
 
         public DbSet<DetalleVentaCompletoView> DetalleVentaCompletoView { get; set; }
 
+        public DbSet<VentasPorDiaView> VentasPorDiaView { get; set; }
+
+        public DbSet<ProductosStockBajoView> ProductosStockBajoView { get; set; }
+
+        public DbSet<TopProductosVendidosView> TopProductosVendidosView { get; set; }
+
+        public DbSet<ResumenCategoriasView> ResumenCategoriasView { get; set; }
+
+        // =====================================================
+        // CONFIGURACIONES
+        // =====================================================
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // =================================================
+            // VISTAS EXISTENTES
+            // =================================================
 
             modelBuilder.Entity<VentaDetalleView>()
                 .HasNoKey()
@@ -49,6 +71,33 @@ namespace InventarioVentasMVC.Models
             modelBuilder.Entity<DetalleVentaCompletoView>()
                 .HasNoKey()
                 .ToView("vw_DetalleVentasCompleto");
+
+            // =================================================
+            // NUEVAS VISTAS DASHBOARD
+            // =================================================
+
+            modelBuilder.Entity<VentasPorDiaView>()
+                .HasNoKey()
+                .ToView("vw_VentasPorDia");
+
+            modelBuilder.Entity<ProductosStockBajoView>()
+                .HasNoKey()
+                .ToView("vw_ProductosStockBajo");
+
+            modelBuilder.Entity<TopProductosVendidosView>()
+                .HasNoKey()
+                .ToView("vw_TopProductosVendidos");
+
+            modelBuilder.Entity<ResumenCategoriasView>()
+                .HasNoKey()
+                .ToView("vw_ResumenCategorias");
+
+            // =================================================
+            // KEYS MANUALES
+            // =================================================
+
+            modelBuilder.Entity<DetalleCompra>()
+                .HasKey(d => d.DetalleId);
         }
     }
 }

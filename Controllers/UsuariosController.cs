@@ -1,7 +1,11 @@
+using InventarioVentasMVC.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using InventarioVentasMVC.Models;
+using System.Security.Claims;
 
+
+[Authorize(Roles = "Admin")]
 public class UsuariosController : Controller
 {
     private readonly InventarioContext _context;
@@ -158,6 +162,13 @@ public class UsuariosController : Controller
             return NotFound();
         }
 
+        var usuarioActualId = int.Parse(User.FindFirstValue("UsuarioId"));
+        if (id == usuarioActualId)
+        {
+            TempData["ErrorMessage"] = "No puedes eliminar tu propia cuenta.";
+            return RedirectToAction(nameof(Index));
+        }
+
         var usuario = await _context.Usuarios
             .FirstOrDefaultAsync(m => m.UsuarioId == id);
 
@@ -174,6 +185,13 @@ public class UsuariosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
+        var usuarioActualId = int.Parse(User.FindFirstValue("UsuarioId"));
+        if (id == usuarioActualId)
+        {
+            TempData["ErrorMessage"] = "No puedes eliminar tu propia cuenta.";
+            return RedirectToAction(nameof(Index));
+        }
+
         var usuario = await _context.Usuarios.FindAsync(id);
 
         if (usuario != null)

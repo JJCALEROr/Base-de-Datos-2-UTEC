@@ -2,7 +2,9 @@ using InventarioVentasMVC.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
+[Authorize(Roles = "Admin")]
 public class ProductosController : Controller
 {
     private readonly InventarioContext _context;

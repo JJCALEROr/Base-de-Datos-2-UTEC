@@ -1,8 +1,323 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model InventarioVentasMVC.ViewModels.HomeDashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container-fluid">
+
+    <!-- ===================================================== -->
+    <!-- TITULO -->
+    <!-- ===================================================== -->
+
+    <div class="mb-4">
+
+        <h1 class="fw-bold">
+            Dashboard
+        </h1>
+
+        <p class="text-muted">
+            Resumen general del sistema de inventario y ventas
+        </p>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- KPIs -->
+    <!-- ===================================================== -->
+
+    <div class="row mb-4">
+
+        <!-- VENTAS HOY -->
+
+        <div class="col-md-3">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Ventas Hoy
+                    </h6>
+
+                    <h2 class="fw-bold text-success">
+
+                        $@Model.VentasHoy.ToString("N2")
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TOTAL VENTAS -->
+
+        <div class="col-md-3">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Total Ventas Hoy
+                    </h6>
+
+                    <h2 class="fw-bold">
+
+                        @Model.TotalVentasHoy
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- STOCK BAJO -->
+
+        <div class="col-md-3">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Productos Stock Bajo
+                    </h6>
+
+                    <h2 class="fw-bold text-danger">
+
+                        @Model.ProductosStockBajo
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TOTAL PRODUCTOS -->
+
+        <div class="col-md-3">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Productos Registrados
+                    </h6>
+
+                    <h2 class="fw-bold text-primary">
+
+                        @Model.TotalProductos
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- STOCK BAJO -->
+    <!-- ===================================================== -->
+
+    <div class="row">
+
+        <div class="col-md-6 mb-4">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-danger text-white">
+
+                    <h5 class="mb-0">
+                        Productos con Stock Bajo
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <table class="table table-striped">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Producto</th>
+                                <th>Stock</th>
+                                <th>Mínimo</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var item in Model.StockBajo)
+                            {
+                                <tr>
+
+                                    <td>
+                                        @item.Nombre
+                                    </td>
+
+                                    <td>
+                                        @item.Stock
+                                    </td>
+
+                                    <td>
+                                        @item.StockMinimo
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- TOP PRODUCTOS -->
+        <!-- ===================================================== -->
+
+        <div class="col-md-6 mb-4">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-success text-white">
+
+                    <h5 class="mb-0">
+                        Top Productos Vendidos
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <table class="table table-striped">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Producto</th>
+                                <th>Ventas</th>
+                                <th>Ingresos</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var item in Model.TopProductos)
+                            {
+                                <tr>
+
+                                    <td>
+                                        @item.Producto
+                                    </td>
+
+                                    <td>
+                                        @item.TotalUnidades
+                                    </td>
+
+                                    <td>
+                                        @(item.TotalIngresos?.ToString("N2") ?? "0.00")
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- RESUMEN CATEGORÍAS -->
+    <!-- ===================================================== -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header bg-primary text-white">
+
+            <h5 class="mb-0">
+                Resumen por Categorías
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-hover">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Categoría</th>
+                        <th>Total Productos</th>
+                        <th>Stock Total</th>
+                        <th>Valor Inventario</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach (var item in Model.ResumenCategorias)
+                    {
+                        <tr>
+
+                            <td>
+                                @item.Categoria
+                            </td>
+
+                            <td>
+                                @item.TotalProductos
+                            </td>
+
+                            <td>
+                                @item.StockTotal
+                            </td>
+
+                            <td>
+                                @(item.ValorInventario?.ToString("N2") ?? "0.00")
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
 </div>

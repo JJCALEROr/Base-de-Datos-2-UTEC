@@ -7,10 +7,10 @@
 <h1>Categorias</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Nueva categoria</a>
 </p>
 <table class="table table-hover table-bordered align-middle">
-    <thead>
+    <thead class="table-dark">
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.Nombre)
@@ -45,9 +45,9 @@
             </td>
             
             <td>
-                <a asp-action="Edit" asp-route-id="@item.CategoriaId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.CategoriaId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.CategoriaId">Delete</a>
+                    <a asp-action="Edit" asp-route-id="@item.CategoriaId" class="btn btn-sm btn-warning">Editar</a> |
+                    <a asp-action="Details" asp-route-id="@item.CategoriaId" class="btn btn-sm btn-info">Detalles</a> |
+                    <a asp-action="Delete" asp-route-id="@item.CategoriaId" class="btn btn-sm btn-danger">Eliminar</a>
             </td>
         </tr>
 }

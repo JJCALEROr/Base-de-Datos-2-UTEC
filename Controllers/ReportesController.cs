@@ -153,6 +153,25 @@ namespace InventarioVentasMVC.Controllers
             var dt = EjecutarVista("vw_ComparativoCompraVenta");
             return GenerarExcel(dt, "ComparativoCompraVenta");
         }
+
+        // ============================================================
+        // TABLA: Usuarios
+        // ============================================================
+        public IActionResult ExportarUsuarios()
+        {
+            var dt = EjecutarVista("Usuarios");
+            return GenerarExcel(dt, "Usuarios");
+        }
+
+        // ============================================================
+        // TABLA: Productos
+        // ============================================================
+        public IActionResult ExportarProductos()
+        {
+            var dt = EjecutarVista("Productos");
+            return GenerarExcel(dt, "Productos");
+        }
+
     }
 }
 

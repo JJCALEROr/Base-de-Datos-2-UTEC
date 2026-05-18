@@ -1,5 +1,84 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<InventarioVentasMVC.Models.Compra>
+
 @{
+    ViewData["Title"] = "Historial Compras";
 }
+
+<h2>Historial Compras</h2>
+
+<hr />
+
+<table class="table table-bordered table-striped">
+
+    <thead>
+
+        <tr>
+
+            <th>Compra</th>
+
+            <th>Fecha</th>
+
+            <th>Proveedor</th>
+
+            <th>Usuario</th>
+
+            <th>Total</th>
+
+            <th>Acciones</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>
+                    @item.CompraId
+                </td>
+
+                <td>
+                    @item.Fecha.ToString("dd/MM/yyyy HH:mm")
+                </td>
+
+                <td>
+                    @item.Proveedor.RazonSocial
+                </td>
+
+                <td>
+                    @item.Usuario.Username
+                </td>
+
+                <td>
+                    $@item.Total
+                </td>
+
+                <td>
+
+                    <a asp-action="Detalle"
+                       asp-route-id="@item.CompraId"
+                       class="btn btn-info btn-sm">
+
+                        Detalle
+
+                    </a>
+
+                    <a asp-action="GenerarPDF"
+                       asp-route-id="@item.CompraId"
+                       class="btn btn-danger btn-sm">
+
+                        PDF
+
+                    </a>
+
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>

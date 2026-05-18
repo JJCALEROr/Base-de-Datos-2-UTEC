@@ -1,11 +1,24 @@
 using InventarioVentasMVC.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Servicios MVC + Runtime Compilation
 builder.Services.AddControllersWithViews()
     .AddRazorRuntimeCompilation();
+
+builder.Services
+    .AddAuthentication(
+        CookieAuthenticationDefaults.AuthenticationScheme
+    )
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+
+        options.AccessDeniedPath =
+            "/Account/Login";
+    });
 
 // DbContext
 builder.Services.AddDbContext<InventarioContext>(options =>
@@ -28,6 +41,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

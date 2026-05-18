@@ -1,14 +1,20 @@
 ﻿using InventarioVentasMVC.Models;
 using InventarioVentasMVC.Models.Reportes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
+
+
 namespace InventarioVentasMVC.Controllers
 {
+    [Authorize(Roles = "Admin,Bodeguero")]
     public class DashboardController : Controller
     {
+
         private readonly InventarioContext _context;
+
 
         public DashboardController(InventarioContext context)
         {

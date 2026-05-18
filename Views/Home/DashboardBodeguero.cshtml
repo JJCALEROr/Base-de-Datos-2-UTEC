@@ -1,0 +1,45 @@
+﻿@model IEnumerable<InventarioVentasMVC.Models.Reportes.ProductosStockBajoView>
+
+<h2>Panel de Inventario</h2>
+
+<div class="alert alert-warning">
+
+    Productos con stock bajo.
+
+</div>
+
+<table class="table table-bordered">
+
+    <thead>
+
+        <tr>
+
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th>Stock</th>
+            <th>Stock Mínimo</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>@item.Nombre</td>
+
+                <td>@item.Categoria</td>
+
+                <td>@item.Stock</td>
+
+                <td>@item.StockMinimo</td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>

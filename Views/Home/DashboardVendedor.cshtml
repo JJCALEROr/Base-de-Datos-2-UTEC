@@ -1,0 +1,47 @@
+﻿<h2>Panel de Ventas</h2>
+
+<div class="alert alert-info">
+
+    @ViewBag.Mensaje
+
+</div>
+
+<div class="row">
+
+    <div class="col-md-4">
+
+        <a asp-controller="Ventas"
+           asp-action="Index"
+           class="btn btn-primary w-100">
+
+            Nueva Venta
+
+        </a>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <a asp-controller="Ventas"
+           asp-action="Historial"
+           class="btn btn-success w-100">
+
+            Historial Ventas
+
+        </a>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <a asp-controller="Clientes"
+           asp-action="Index"
+           class="btn btn-secondary w-100">
+
+            Clientes
+
+        </a>
+
+    </div>
+
+</div>

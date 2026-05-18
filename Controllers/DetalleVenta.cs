@@ -1,9 +1,12 @@
 ﻿using InventarioVentasMVC.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace InventarioVentasMVC.Controllers
 {
+    [Authorize(Roles = "Admin,Bodeguero")]
     public class DetalleVenta
     {
         [Key]

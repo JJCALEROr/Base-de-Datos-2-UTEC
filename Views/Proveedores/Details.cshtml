@@ -9,14 +9,15 @@
 <div>
     <h4>Proveedor</h4>
     <hr />
-    <dl class="row">
+   
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.RazonSocial)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.RazonSocial)
         </dd>
-    </dl>
+   
+
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.NIT)
         </dt>
@@ -61,6 +62,6 @@
   
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.ProveedorId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Edit" asp-route-id="@Model?.ProveedorId" class="btn btn-primary">Editar</a> |
+    <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
 </div>

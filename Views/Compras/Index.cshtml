@@ -48,25 +48,7 @@
             </select>
 
         </div>
-
-        <div class="col-md-4">
-
-            <label class="form-label">
-                Usuario
-            </label>
-
-            <select asp-for="UsuarioId"
-                    class="form-select"
-                    asp-items="ViewBag.UsuarioId">
-
-                <option value="">
-                    -- Seleccione usuario --
-                </option>
-
-            </select>
-
-        </div>
-
+               
         <div class="col-md-4">
 
             <label class="form-label">
@@ -81,7 +63,6 @@
     </div>
 
     <hr />
-
     <h4>Carrito</h4>
 
     <table class="table table-bordered">
@@ -188,7 +169,9 @@
 
 <h4>Agregar Producto</h4>
 
-<form asp-action="AgregarProducto" method="post">
+<form asp-action="AgregarProducto"
+      method="post"
+      id="formAgregarProducto">
 
     <!-- DATOS TEMPORALES -->
     <input type="hidden"
@@ -278,6 +261,57 @@
 </form>
 
 @section Scripts {
+
+
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+                const formAgregar =
+        document.getElementById("formAgregarProducto");
+
+            if (formAgregar) {
+
+                formAgregar.addEventListener("submit", function () {
+
+                    // =====================================
+                    // PROVEEDOR
+                    // =====================================
+
+                    let proveedor =
+                        document.getElementById("proveedorSelect").value;
+
+                    document.querySelector("input[name='proveedorId']")
+                        .value = proveedor;
+
+                    // =====================================
+                    // USUARIO
+                    // =====================================
+
+                    let usuario =
+                        document.querySelector("select[name='UsuarioId']").value;
+
+                    document.querySelector("input[name='usuarioId']")
+                        .value = usuario;
+
+                    // =====================================
+                    // OBSERVACIONES
+                    // =====================================
+
+                    let observaciones =
+                        document.querySelector("input[name='Observaciones']").value;
+
+                    document.querySelector("input[name='observaciones']")
+                        .value = observaciones;
+
+                });
+
+            }
+
+        });
+
+    </script>
 
     <script>
 

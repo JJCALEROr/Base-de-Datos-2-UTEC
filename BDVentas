@@ -1,0 +1,777 @@
+CREATE DATABASE InventarioVentas
+   
+GO 
+USE InventarioVentas;
+GO
+
+-- ============================================================
+--  TABLAS
+-- ============================================================
+ 
+-- 1. Categor�as
+CREATE TABLE Categorias (
+    CategoriaId   INT           IDENTITY(1,1) PRIMARY KEY,
+    Nombre        NVARCHAR(100) NOT NULL,
+    Descripcion   NVARCHAR(250) NULL,
+    Activo        BIT           NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2     NOT NULL DEFAULT GETDATE()
+);
+GO
+ 
+-- 2. Proveedores
+CREATE TABLE Proveedores (
+    ProveedorId   INT            IDENTITY(1,1) PRIMARY KEY,
+    RazonSocial   NVARCHAR(150)  NOT NULL,
+    NIT           NVARCHAR(20)   NOT NULL UNIQUE,
+    Telefono      NVARCHAR(20)   NULL,
+    Email         NVARCHAR(100)  NULL,
+    Direccion     NVARCHAR(250)  NULL,
+    Activo        BIT            NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2      NOT NULL DEFAULT GETDATE()
+);
+GO
+ 
+-- 3. Productos
+CREATE TABLE Productos (
+    ProductoId    INT             IDENTITY(1,1) PRIMARY KEY,
+    CategoriaId   INT             NOT NULL,
+    ProveedorId   INT             NOT NULL,
+    Codigo        NVARCHAR(50)    NOT NULL UNIQUE,
+    Nombre        NVARCHAR(150)   NOT NULL,
+    Descripcion   NVARCHAR(500)   NULL,
+    PrecioCompra  DECIMAL(18,2)   NOT NULL,
+    PrecioVenta   DECIMAL(18,2)   NOT NULL,
+    Stock         INT             NOT NULL DEFAULT 0,
+    StockMinimo   INT             NOT NULL DEFAULT 5,
+    Activo        BIT             NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2       NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT FK_Productos_Categorias FOREIGN KEY (CategoriaId)
+        REFERENCES Categorias(CategoriaId),
+    CONSTRAINT FK_Productos_Proveedores FOREIGN KEY (ProveedorId)
+        REFERENCES Proveedores(ProveedorId),
+    CONSTRAINT CK_PrecioVenta CHECK (PrecioVenta >= PrecioCompra),
+    CONSTRAINT CK_Stock CHECK (Stock >= 0)
+);
+GO
+ 
+-- 4. Clientes
+CREATE TABLE Clientes (
+    ClienteId     INT            IDENTITY(1,1) PRIMARY KEY,
+    Nombre        NVARCHAR(100)  NOT NULL,
+    Apellido      NVARCHAR(100)  NOT NULL,
+    DUI           NVARCHAR(20)   NULL UNIQUE,
+    Telefono      NVARCHAR(20)   NULL,
+    Email         NVARCHAR(100)  NULL,
+    Direccion     NVARCHAR(250)  NULL,
+    Activo        BIT            NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2      NOT NULL DEFAULT GETDATE()
+);
+GO
+ 
+-- 5. Usuarios
+CREATE TABLE Usuarios (
+    UsuarioId     INT            IDENTITY(1,1) PRIMARY KEY,
+    Nombre        NVARCHAR(100)  NOT NULL,
+    Apellido      NVARCHAR(100)  NOT NULL,
+    Username      NVARCHAR(50)   NOT NULL UNIQUE,
+    PasswordHash  NVARCHAR(256)  NOT NULL,
+    Rol           NVARCHAR(30)   NOT NULL DEFAULT 'Vendedor',  -- Admin, Vendedor, Bodeguero
+    Activo        BIT            NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME2      NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT CK_Rol CHECK (Rol IN ('Admin','Vendedor','Bodeguero'))
+);
+GO
+ 
+-- 6. Ventas (encabezado)
+CREATE TABLE Ventas (
+    VentaId       INT            IDENTITY(1,1) PRIMARY KEY,
+    ClienteId     INT            NOT NULL,
+    UsuarioId     INT            NOT NULL,
+    NumeroVenta   NVARCHAR(20)   NOT NULL UNIQUE,
+    Fecha         DATETIME2      NOT NULL DEFAULT GETDATE(),
+    Subtotal      DECIMAL(18,2)  NOT NULL DEFAULT 0,
+    Descuento     DECIMAL(18,2)  NOT NULL DEFAULT 0,
+    IVA           DECIMAL(18,2)  NOT NULL DEFAULT 0,
+    Total         DECIMAL(18,2)  NOT NULL DEFAULT 0,
+    Estado        NVARCHAR(20)   NOT NULL DEFAULT 'Completada', -- Completada, Anulada
+    Observaciones NVARCHAR(500)  NULL,
+    CONSTRAINT FK_Ventas_Clientes FOREIGN KEY (ClienteId)
+        REFERENCES Clientes(ClienteId),
+    CONSTRAINT FK_Ventas_Usuarios FOREIGN KEY (UsuarioId)
+        REFERENCES Usuarios(UsuarioId),
+    CONSTRAINT CK_Estado CHECK (Estado IN ('Completada','Anulada'))
+);
+GO
+ 
+-- 7. Detalle de Ventas
+CREATE TABLE DetalleVentas (
+    DetalleId     INT            IDENTITY(1,1) PRIMARY KEY,
+    VentaId       INT            NOT NULL,
+    ProductoId    INT            NOT NULL,
+    Cantidad      INT            NOT NULL,
+    PrecioUnitario DECIMAL(18,2) NOT NULL,
+    Descuento     DECIMAL(18,2)  NOT NULL DEFAULT 0,
+    Subtotal      DECIMAL(18,2)  NOT NULL,
+    CONSTRAINT FK_DetalleVentas_Ventas FOREIGN KEY (VentaId)
+        REFERENCES Ventas(VentaId),
+    CONSTRAINT FK_DetalleVentas_Productos FOREIGN KEY (ProductoId)
+        REFERENCES Productos(ProductoId),
+    CONSTRAINT CK_Cantidad CHECK (Cantidad > 0)
+);
+GO
+ 
+-- 8. Compras (entradas de inventario)
+CREATE TABLE Compras (
+    CompraId      INT            IDENTITY(1,1) PRIMARY KEY,
+    ProveedorId   INT            NOT NULL,
+    UsuarioId     INT            NOT NULL,
+    NumeroCompra  NVARCHAR(20)   NOT NULL UNIQUE,
+    Fecha         DATETIME2      NOT NULL DEFAULT GETDATE(),
+    Total         DECIMAL(18,2)  NOT NULL DEFAULT 0,
+    Estado        NVARCHAR(20)   NOT NULL DEFAULT 'Recibida',
+    Observaciones NVARCHAR(500)  NULL,
+    CONSTRAINT FK_Compras_Proveedores FOREIGN KEY (ProveedorId)
+        REFERENCES Proveedores(ProveedorId),
+    CONSTRAINT FK_Compras_Usuarios FOREIGN KEY (UsuarioId)
+        REFERENCES Usuarios(UsuarioId)
+);
+GO
+ 
+-- 9. Detalle de Compras
+CREATE TABLE DetalleCompras (
+    DetalleId      INT            IDENTITY(1,1) PRIMARY KEY,
+    CompraId       INT            NOT NULL,
+    ProductoId     INT            NOT NULL,
+    Cantidad       INT            NOT NULL,
+    PrecioUnitario DECIMAL(18,2)  NOT NULL,
+    Subtotal       DECIMAL(18,2)  NOT NULL,
+    CONSTRAINT FK_DetalleCompras_Compras FOREIGN KEY (CompraId)
+        REFERENCES Compras(CompraId),
+    CONSTRAINT FK_DetalleCompras_Productos FOREIGN KEY (ProductoId)
+        REFERENCES Productos(ProductoId)
+);
+GO
+ 
+-- 10. Movimientos de inventario (auditor�a de stock)
+CREATE TABLE MovimientosInventario (
+    MovimientoId  INT            IDENTITY(1,1) PRIMARY KEY,
+    ProductoId    INT            NOT NULL,
+    Tipo          NVARCHAR(20)   NOT NULL,  -- Entrada, Salida, Ajuste
+    Cantidad      INT            NOT NULL,
+    StockAnterior INT            NOT NULL,
+    StockNuevo    INT            NOT NULL,
+    Referencia    NVARCHAR(50)   NULL,       -- NumeroVenta o NumeroCompra
+    Fecha         DATETIME2      NOT NULL DEFAULT GETDATE(),
+    UsuarioId     INT            NULL,
+    CONSTRAINT FK_Movimientos_Productos FOREIGN KEY (ProductoId)
+        REFERENCES Productos(ProductoId)
+);
+GO
+ 
+-- 11. Log de auditor�a general
+CREATE TABLE AuditoriaLog (
+    LogId         INT            IDENTITY(1,1) PRIMARY KEY,
+    Tabla         NVARCHAR(50)   NOT NULL,
+    Accion        NVARCHAR(10)   NOT NULL,  -- INSERT, UPDATE, DELETE
+    RegistroId    INT            NOT NULL,
+    DatosAnteriores NVARCHAR(MAX) NULL,
+    DatosNuevos   NVARCHAR(MAX)  NULL,
+    Fecha         DATETIME2      NOT NULL DEFAULT GETDATE(),
+    Usuario       NVARCHAR(100)  NULL
+);
+GO
+ 
+-- ============================================================
+--  �NDICES
+-- ============================================================
+ 
+-- Productos
+CREATE INDEX IX_Productos_Categoria    ON Productos(CategoriaId);
+CREATE INDEX IX_Productos_Proveedor    ON Productos(ProveedorId);
+CREATE INDEX IX_Productos_Codigo       ON Productos(Codigo);
+CREATE INDEX IX_Productos_Nombre       ON Productos(Nombre);
+ 
+-- Ventas
+CREATE INDEX IX_Ventas_Cliente         ON Ventas(ClienteId);
+CREATE INDEX IX_Ventas_Usuario         ON Ventas(UsuarioId);
+CREATE INDEX IX_Ventas_Fecha           ON Ventas(Fecha);
+CREATE INDEX IX_Ventas_Estado          ON Ventas(Estado);
+CREATE INDEX IX_Ventas_NumeroVenta     ON Ventas(NumeroVenta);
+ 
+-- DetalleVentas
+CREATE INDEX IX_DetalleVentas_Venta    ON DetalleVentas(VentaId);
+CREATE INDEX IX_DetalleVentas_Producto ON DetalleVentas(ProductoId);
+ 
+-- Compras
+CREATE INDEX IX_Compras_Proveedor      ON Compras(ProveedorId);
+CREATE INDEX IX_Compras_Fecha          ON Compras(Fecha);
+ 
+-- MovimientosInventario
+CREATE INDEX IX_Movimientos_Producto   ON MovimientosInventario(ProductoId);
+CREATE INDEX IX_Movimientos_Fecha      ON MovimientosInventario(Fecha);
+CREATE INDEX IX_Movimientos_Tipo       ON MovimientosInventario(Tipo);
+ 
+GO
+PRINT 'Tablas e �ndices creados correctamente.';
+
+-- --------------------------------------------------------
+-- Vista 1: Productos con categor�a, proveedor y estado stock
+-- --------------------------------------------------------
+CREATE OR ALTER VIEW vw_ProductosDetalle AS
+SELECT
+    p.ProductoId,
+    p.Codigo,
+    p.Nombre                         AS Producto,
+    c.Nombre                         AS Categoria,
+    pr.RazonSocial                   AS Proveedor,
+    p.PrecioCompra,
+    p.PrecioVenta,
+    p.Stock,
+    p.StockMinimo,
+    CASE
+        WHEN p.Stock = 0             THEN 'Sin Stock'
+        WHEN p.Stock <= p.StockMinimo THEN 'Stock Bajo'
+        ELSE 'Disponible'
+    END                              AS EstadoStock,
+    p.Activo,
+    p.FechaCreacion
+FROM Productos p
+INNER JOIN Categorias  c  ON p.CategoriaId  = c.CategoriaId
+INNER JOIN Proveedores pr ON p.ProveedorId  = pr.ProveedorId;
+GO
+ 
+-- --------------------------------------------------------
+-- Vista 2: Ventas con cliente y usuario
+-- --------------------------------------------------------
+CREATE OR ALTER VIEW vw_VentasDetalle AS
+SELECT
+    v.VentaId,
+    v.NumeroVenta,
+    v.Fecha,
+    c.ClienteId,
+    c.Nombre + ' ' + c.Apellido     AS Cliente,
+    c.DUI,
+    u.Nombre + ' ' + u.Apellido     AS Vendedor,
+    v.Subtotal,
+    v.Descuento,
+    v.IVA,
+    v.Total,
+    v.Estado,
+    v.Observaciones
+FROM Ventas v
+INNER JOIN Clientes  c ON v.ClienteId  = c.ClienteId
+INNER JOIN Usuarios  u ON v.UsuarioId  = u.UsuarioId;
+GO
+ 
+-- --------------------------------------------------------
+-- Vista 3: Detalle de ventas completo
+-- --------------------------------------------------------
+CREATE OR ALTER VIEW vw_DetalleVentasCompleto AS
+SELECT
+    dv.DetalleId,
+    v.NumeroVenta,
+    v.Fecha,
+    c.Nombre + ' ' + c.Apellido     AS Cliente,
+    p.Codigo                         AS CodigoProducto,
+    p.Nombre                         AS Producto,
+    cat.Nombre                       AS Categoria,
+    dv.Cantidad,
+    dv.PrecioUnitario,
+    dv.Descuento,
+    dv.Subtotal,
+    v.Estado
+FROM DetalleVentas  dv
+INNER JOIN Ventas    v   ON dv.VentaId    = v.VentaId
+INNER JOIN Productos p   ON dv.ProductoId = p.ProductoId
+INNER JOIN Clientes  c   ON v.ClienteId   = c.ClienteId
+INNER JOIN Categorias cat ON p.CategoriaId = cat.CategoriaId;
+GO
+ 
+-- --------------------------------------------------------
+-- Vista 4: Resumen de ventas por d�a
+-- --------------------------------------------------------
+CREATE OR ALTER VIEW vw_VentasPorDia AS
+SELECT
+    CAST(v.Fecha AS DATE)           AS Dia,
+    COUNT(v.VentaId)                AS TotalVentas,
+    SUM(v.Total)                    AS MontoTotal,
+    SUM(v.Descuento)                AS TotalDescuentos,
+    AVG(v.Total)                    AS PromedioVenta
+FROM Ventas v
+WHERE v.Estado = 'Completada'
+GROUP BY CAST(v.Fecha AS DATE);
+GO
+ 
+-- --------------------------------------------------------
+-- Vista 5: Productos con stock bajo
+-- --------------------------------------------------------
+CREATE OR ALTER VIEW vw_ProductosStockBajo AS
+SELECT
+    p.ProductoId,
+    p.Codigo,
+    p.Nombre,
+    c.Nombre  AS Categoria,
+    pr.RazonSocial AS Proveedor,
+    pr.Email  AS EmailProveedor,
+    p.Stock,
+    p.StockMinimo,
+    (p.StockMinimo - p.Stock) AS CantidadFaltante
+FROM Productos p
+INNER JOIN Categorias  c  ON p.CategoriaId  = c.CategoriaId
+INNER JOIN Proveedores pr ON p.ProveedorId  = pr.ProveedorId
+WHERE p.Stock <= p.StockMinimo
+  AND p.Activo = 1;
+GO
+ 
+-- --------------------------------------------------------
+-- Vista 6: Top productos m�s vendidos
+-- --------------------------------------------------------
+CREATE OR ALTER VIEW vw_TopProductosVendidos AS
+SELECT TOP 100
+    p.ProductoId,
+    p.Codigo,
+    p.Nombre                        AS Producto,
+    c.Nombre                        AS Categoria,
+    SUM(dv.Cantidad)                AS TotalUnidades,
+    SUM(dv.Subtotal)                AS TotalIngresos,
+    COUNT(DISTINCT v.VentaId)       AS NumeroVentas
+FROM DetalleVentas dv
+INNER JOIN Ventas     v   ON dv.VentaId    = v.VentaId
+INNER JOIN Productos  p   ON dv.ProductoId = p.ProductoId
+INNER JOIN Categorias c   ON p.CategoriaId = c.CategoriaId
+WHERE v.Estado = 'Completada'
+GROUP BY p.ProductoId, p.Codigo, p.Nombre, c.Nombre
+ORDER BY TotalUnidades DESC;
+GO
+ 
+-- --------------------------------------------------------
+-- Vista 7: Resumen por categor�a
+-- --------------------------------------------------------
+CREATE OR ALTER VIEW vw_ResumenCategorias AS
+SELECT
+    c.CategoriaId,
+    c.Nombre                        AS Categoria,
+    COUNT(p.ProductoId)             AS TotalProductos,
+    SUM(p.Stock)                    AS StockTotal,
+    SUM(p.Stock * p.PrecioVenta)    AS ValorInventario,
+    AVG(p.PrecioVenta)              AS PrecioPromedio
+FROM Categorias c
+LEFT JOIN Productos p ON c.CategoriaId = p.CategoriaId AND p.Activo = 1
+GROUP BY c.CategoriaId, c.Nombre;
+GO
+
+-- --------------------------------------------------------
+-- SP 1: Registrar Venta completa (encabezado + detalle)
+-- --------------------------------------------------------
+CREATE OR ALTER PROCEDURE sp_RegistrarVenta
+    @ClienteId     INT,
+    @UsuarioId     INT,
+    @Descuento     DECIMAL(18,2),
+    @Observaciones NVARCHAR(500),
+    @Detalle       NVARCHAR(MAX),   -- JSON: [{ProductoId, Cantidad, PrecioUnitario, Descuento}]
+    @VentaId       INT OUTPUT,
+    @NumeroVenta   NVARCHAR(20) OUTPUT,
+    @Mensaje       NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+ 
+        -- Generar n�mero de venta
+        SET @NumeroVenta = 'VTA-' + FORMAT(GETDATE(), 'yyyyMMdd') +
+                           RIGHT('0000' + CAST((
+                               SELECT ISNULL(MAX(VentaId),0)+1 FROM Ventas
+                           ) AS NVARCHAR), 4);
+ 
+        -- Parsear detalle desde JSON
+        DECLARE @DetalleTemp TABLE (
+            ProductoId     INT,
+            Cantidad       INT,
+            PrecioUnitario DECIMAL(18,2),
+            Descuento      DECIMAL(18,2)
+        );
+ 
+        INSERT INTO @DetalleTemp
+        SELECT
+            JSON_VALUE(j.value, '$.ProductoId'),
+            JSON_VALUE(j.value, '$.Cantidad'),
+            JSON_VALUE(j.value, '$.PrecioUnitario'),
+            JSON_VALUE(j.value, '$.Descuento')
+        FROM OPENJSON(@Detalle) j;
+ 
+        -- Validar stock
+        IF EXISTS (
+            SELECT 1 FROM @DetalleTemp dt
+            INNER JOIN Productos p ON dt.ProductoId = p.ProductoId
+            WHERE p.Stock < dt.Cantidad
+        )
+        BEGIN
+            ROLLBACK;
+            SET @Mensaje = 'ERROR: Stock insuficiente para uno o m�s productos.';
+            RETURN;
+        END
+ 
+        -- Calcular subtotal
+        DECLARE @Subtotal DECIMAL(18,2);
+        SELECT @Subtotal = SUM((Cantidad * PrecioUnitario) - Descuento)
+        FROM @DetalleTemp;
+ 
+        DECLARE @IVA      DECIMAL(18,2) = @Subtotal * 0.13;
+        DECLARE @Total    DECIMAL(18,2) = @Subtotal - @Descuento + @IVA;
+ 
+        -- Insertar encabezado venta
+        INSERT INTO Ventas (ClienteId, UsuarioId, NumeroVenta, Subtotal, Descuento, IVA, Total, Observaciones)
+        VALUES (@ClienteId, @UsuarioId, @NumeroVenta, @Subtotal, @Descuento, @IVA, @Total, @Observaciones);
+ 
+        SET @VentaId = SCOPE_IDENTITY();
+ 
+        -- Insertar detalle y descontar stock
+        INSERT INTO DetalleVentas (VentaId, ProductoId, Cantidad, PrecioUnitario, Descuento, Subtotal)
+        SELECT
+            @VentaId,
+            dt.ProductoId,
+            dt.Cantidad,
+            dt.PrecioUnitario,
+            dt.Descuento,
+            (dt.Cantidad * dt.PrecioUnitario) - dt.Descuento
+        FROM @DetalleTemp dt;
+ 
+        -- Actualizar stock (el trigger TR_RegistrarMovimientoSalida lo registra)
+        UPDATE p
+        SET p.Stock = p.Stock - dt.Cantidad
+        FROM Productos p
+        INNER JOIN @DetalleTemp dt ON p.ProductoId = dt.ProductoId;
+ 
+        COMMIT;
+        SET @Mensaje = 'OK: Venta registrada correctamente.';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK;
+        SET @Mensaje = 'ERROR: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+ 
+-- --------------------------------------------------------
+-- SP 2: Anular venta (restaura stock)
+-- --------------------------------------------------------
+CREATE OR ALTER PROCEDURE sp_AnularVenta
+    @VentaId  INT,
+    @Mensaje  NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+ 
+        IF NOT EXISTS (SELECT 1 FROM Ventas WHERE VentaId = @VentaId AND Estado = 'Completada')
+        BEGIN
+            ROLLBACK;
+            SET @Mensaje = 'ERROR: Venta no encontrada o ya anulada.';
+            RETURN;
+        END
+ 
+        -- Restaurar stock
+        UPDATE p
+        SET p.Stock = p.Stock + dv.Cantidad
+        FROM Productos p
+        INNER JOIN DetalleVentas dv ON p.ProductoId = dv.ProductoId
+        WHERE dv.VentaId = @VentaId;
+ 
+        -- Cambiar estado
+        UPDATE Ventas SET Estado = 'Anulada' WHERE VentaId = @VentaId;
+ 
+        COMMIT;
+        SET @Mensaje = 'OK: Venta anulada y stock restaurado.';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK;
+        SET @Mensaje = 'ERROR: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+ 
+-- --------------------------------------------------------
+-- SP 3: Registrar Compra (entrada de inventario)
+-- --------------------------------------------------------
+CREATE OR ALTER PROCEDURE sp_RegistrarCompra
+    @ProveedorId   INT,
+    @UsuarioId     INT,
+    @Observaciones NVARCHAR(500),
+    @Detalle       NVARCHAR(MAX),  -- JSON
+    @CompraId      INT OUTPUT,
+    @Mensaje       NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+ 
+        DECLARE @NumeroCompra NVARCHAR(20) =
+            'CMP-' + FORMAT(GETDATE(),'yyyyMMdd') +
+            RIGHT('0000' + CAST((SELECT ISNULL(MAX(CompraId),0)+1 FROM Compras) AS NVARCHAR),4);
+ 
+        DECLARE @DetalleTemp TABLE (
+            ProductoId     INT,
+            Cantidad       INT,
+            PrecioUnitario DECIMAL(18,2)
+        );
+ 
+        INSERT INTO @DetalleTemp
+        SELECT
+            JSON_VALUE(j.value,'$.ProductoId'),
+            JSON_VALUE(j.value,'$.Cantidad'),
+            JSON_VALUE(j.value,'$.PrecioUnitario')
+        FROM OPENJSON(@Detalle) j;
+ 
+        DECLARE @Total DECIMAL(18,2);
+        SELECT @Total = SUM(Cantidad * PrecioUnitario) FROM @DetalleTemp;
+ 
+        INSERT INTO Compras (ProveedorId, UsuarioId, NumeroCompra, Total, Observaciones)
+        VALUES (@ProveedorId, @UsuarioId, @NumeroCompra, @Total, @Observaciones);
+ 
+        SET @CompraId = SCOPE_IDENTITY();
+ 
+        INSERT INTO DetalleCompras (CompraId, ProductoId, Cantidad, PrecioUnitario, Subtotal)
+        SELECT @CompraId, ProductoId, Cantidad, PrecioUnitario, Cantidad * PrecioUnitario
+        FROM @DetalleTemp;
+ 
+        -- Actualizar stock
+        UPDATE p
+        SET p.Stock = p.Stock + dt.Cantidad,
+            p.PrecioCompra = dt.PrecioUnitario
+        FROM Productos p
+        INNER JOIN @DetalleTemp dt ON p.ProductoId = dt.ProductoId;
+ 
+        COMMIT;
+        SET @Mensaje = 'OK: Compra registrada y stock actualizado.';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK;
+        SET @Mensaje = 'ERROR: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+ 
+-- --------------------------------------------------------
+-- SP 4: Reporte de ventas por rango de fechas
+-- --------------------------------------------------------
+CREATE OR ALTER PROCEDURE sp_ReporteVentas
+    @FechaInicio DATE,
+    @FechaFin    DATE,
+    @ClienteId   INT = NULL,
+    @UsuarioId   INT = NULL,
+    @Estado      NVARCHAR(20) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT
+        v.NumeroVenta,
+        v.Fecha,
+        c.Nombre + ' ' + c.Apellido AS Cliente,
+        u.Nombre + ' ' + u.Apellido AS Vendedor,
+        v.Subtotal,
+        v.Descuento,
+        v.IVA,
+        v.Total,
+        v.Estado
+    FROM Ventas v
+    INNER JOIN Clientes c ON v.ClienteId = c.ClienteId
+    INNER JOIN Usuarios u ON v.UsuarioId = u.UsuarioId
+    WHERE CAST(v.Fecha AS DATE) BETWEEN @FechaInicio AND @FechaFin
+      AND (@ClienteId IS NULL OR v.ClienteId = @ClienteId)
+      AND (@UsuarioId IS NULL OR v.UsuarioId = @UsuarioId)
+      AND (@Estado    IS NULL OR v.Estado    = @Estado)
+    ORDER BY v.Fecha DESC;
+END;
+GO
+ 
+-- --------------------------------------------------------
+-- SP 5: Reporte productos con stock bajo
+-- --------------------------------------------------------
+CREATE OR ALTER PROCEDURE sp_ProductosStockBajo
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT * FROM vw_ProductosStockBajo ORDER BY CantidadFaltante DESC;
+END;
+GO
+ 
+-- --------------------------------------------------------
+-- SP 6: B�squeda de productos
+-- --------------------------------------------------------
+CREATE OR ALTER PROCEDURE sp_BuscarProductos
+    @Termino    NVARCHAR(100) = NULL,
+    @CategoriaId INT = NULL,
+    @SoloActivos BIT = 1
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT *
+    FROM vw_ProductosDetalle
+    WHERE (@Termino     IS NULL OR Producto LIKE '%' + @Termino + '%'
+                                OR Codigo   LIKE '%' + @Termino + '%')
+      AND (@CategoriaId IS NULL OR CategoriaId = @CategoriaId)
+      AND (@SoloActivos = 0    OR Activo = 1)
+    ORDER BY Producto;
+END;
+GO
+ 
+-- --------------------------------------------------------
+-- SP 7: Dashboard - KPIs del d�a
+-- --------------------------------------------------------
+CREATE OR ALTER PROCEDURE sp_DashboardHoy
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Hoy DATE = CAST(GETDATE() AS DATE);
+ 
+    SELECT
+        (SELECT COUNT(*) FROM Ventas
+         WHERE CAST(Fecha AS DATE) = @Hoy AND Estado='Completada')  AS VentasHoy,
+        (SELECT ISNULL(SUM(Total),0) FROM Ventas
+         WHERE CAST(Fecha AS DATE) = @Hoy AND Estado='Completada')  AS IngresoHoy,
+        (SELECT COUNT(*) FROM vw_ProductosStockBajo)                AS ProductosStockBajo,
+        (SELECT COUNT(*) FROM Productos WHERE Activo=1)             AS TotalProductos,
+        (SELECT COUNT(*) FROM Clientes  WHERE Activo=1)             AS TotalClientes;
+END;
+GO
+
+
+--Poblado de datos
+
+INSERT INTO Categorias (Nombre, Descripcion, Activo, FechaCreacion)
+VALUES
+('Bebidas', 'Gaseosas y jugos', 1, GETDATE()),
+('Snacks', 'Galletas y frituras', 1, GETDATE()),
+('Panader�a', 'Pan y reposter�a', 1, GETDATE()),
+('L�cteos', 'Leche y derivados', 1, GETDATE()),
+('Huevos y Quesos', 'Huevos y quesos frescos', 1, GETDATE()),
+('Granos B�sicos', 'Arroz y frijoles', 1, GETDATE()),
+('Aceites y Az�car', 'Aceite y az�car refinada', 1, GETDATE()),
+('Condimentos', 'Sal y especias', 1, GETDATE());
+
+
+INSERT INTO Productos (CategoriaId, ProveedorId, Codigo, Nombre, Descripcion, PrecioCompra, PrecioVenta, Stock, StockMinimo, Activo, FechaCreacion)
+VALUES
+(1, 1, 'P001', 'Coca Cola Lata', 'Bebida gaseosa', 0.40, 0.65, 20, 5, 1, GETDATE()),
+(1, 1, 'P002', 'Pepsi 2.5L', 'Bebida gaseosa', 1.80, 2.60, 20, 5, 1, GETDATE()),
+(2, 2, 'P003', 'Oreo', 'Galletas dulces', 0.30, 0.50, 20, 5, 1, GETDATE()),
+(2, 2, 'P004', 'Doritos', 'Snacks de ma�z', 0.50, 0.70, 20, 5, 1, GETDATE()),
+(3, 3, 'P005', 'Pan Blanco', 'Pan de caja', 0.60, 0.90, 20, 5, 1, GETDATE()),
+(4, 4, 'P006', 'Leche Entera', '1 litro', 0.80, 1.20, 20, 5, 1, GETDATE()),
+(5, 5, 'P007', 'Huevos Docena', 'Huevos frescos', 1.50, 2.00, 20, 5, 1, GETDATE()),
+(6, 6, 'P008', 'Arroz 5lb', 'Grano b�sico', 2.50, 3.20, 20, 5, 1, GETDATE()),
+(7, 7, 'P009', 'Aceite 1L', 'Aceite vegetal', 1.80, 2.50, 20, 5, 1, GETDATE()),
+(8, 8, 'P010', 'Sal 1lb', 'Sal refinada', 0.40, 0.60, 20, 5, 1, GETDATE());
+
+INSERT INTO Proveedores (RazonSocial, NIT, Telefono, Email, Direccion, Activo, FechaCreacion)
+VALUES
+('Distribuidora Bebidas S.A.', '0614-123456-001-0', '2222-1111', 'bebidas@proveedor.com', 'San Salvador', 1, GETDATE()),
+('Snacks El Salvador', '0614-654321-001-0', '2222-2222', 'snacks@proveedor.com', 'Santa Tecla', 1, GETDATE()),
+('Panader�a Central', '0614-987654-001-0', '2222-3333', 'pan@proveedor.com', 'Soyapango', 1, GETDATE()),
+('L�cteos del Campo', '0614-456789-001-0', '2222-4444', 'lacteos@proveedor.com', 'La Libertad', 1, GETDATE()),
+('Huevos y Quesos S.A.', '0614-111222-001-0', '2222-5555', 'huevos@proveedor.com', 'San Miguel', 1, GETDATE()),
+('Granos B�sicos S.A.', '0614-333444-001-0', '2222-6666', 'granos@proveedor.com', 'Santa Ana', 1, GETDATE()),
+('Aceites y Az�car S.A.', '0614-555666-001-0', '2222-7777', 'aceites@proveedor.com', 'Usulut�n', 1, GETDATE()),
+('Condimentos S.A.', '0614-777888-001-0', '2222-8888', 'condimentos@proveedor.com', 'Sonsonate', 1, GETDATE());
+
+-- ============================================================
+-- CLIENTES (20 REGISTROS)
+-- ============================================================
+
+INSERT INTO Clientes (Nombre, Apellido, DUI, Telefono, Email, Direccion, Activo)
+VALUES
+('Carlos','Martinez','01234567-1','7000-0001','carlos1@gmail.com','San Salvador',1),
+('Ana','Lopez','01234567-2','7000-0002','ana2@gmail.com','Santa Ana',1),
+('Luis','Hernandez','01234567-3','7000-0003','luis3@gmail.com','Soyapango',1),
+('Maria','Gomez','01234567-4','7000-0004','maria4@gmail.com','Apopa',1),
+('Jorge','Ramirez','01234567-5','7000-0005','jorge5@gmail.com','Mejicanos',1),
+('Patricia','Flores','01234567-6','7000-0006','patricia6@gmail.com','Ilopango',1),
+('Miguel','Castro','01234567-7','7000-0007','miguel7@gmail.com','Santa Tecla',1),
+('Lucia','Morales','01234567-8','7000-0008','lucia8@gmail.com','La Libertad',1),
+('Ricardo','Ruiz','01234567-9','7000-0009','ricardo9@gmail.com','San Miguel',1),
+('Elena','Vasquez','01234567-0','7000-0010','elena10@gmail.com','Usulutan',1),
+('Fernando','Perez','11234567-1','7000-0011','fernando11@gmail.com','Sonsonate',1),
+('Daniela','Cruz','11234567-2','7000-0012','daniela12@gmail.com','Ahuachapan',1),
+('Oscar','Mendoza','11234567-3','7000-0013','oscar13@gmail.com','Cuscatancingo',1),
+('Rosa','Rivas','11234567-4','7000-0014','rosa14@gmail.com','Chalatenango',1),
+('Eduardo','Navarro','11234567-5','7000-0015','eduardo15@gmail.com','San Vicente',1),
+('Karla','Silva','11234567-6','7000-0016','karla16@gmail.com','Zacatecoluca',1),
+('Andres','Torres','11234567-7','7000-0017','andres17@gmail.com','La Union',1),
+('Sofia','Reyes','11234567-8','7000-0018','sofia18@gmail.com','Morazan',1),
+('Jose','Alvarado','11234567-9','7000-0019','jose19@gmail.com','Cojutepeque',1),
+('Valeria','Campos','11234567-0','7000-0020','valeria20@gmail.com','San Salvador',1);
+
+-- ============================================================
+-- USUARIOS
+-- ============================================================
+
+INSERT INTO Usuarios (Nombre, Apellido, Username, PasswordHash, Rol, Activo)
+VALUES
+('Admin','Sistema','admin1','123456','Admin',1),
+('Mario','Lopez','mlopez','123456','Vendedor',1),
+('Andrea','Cruz','acruz','123456','Vendedor',1),
+('Jose','Perez','jperez','123456','Bodeguero',1)
+
+-- ============================================================
+-- VENTAS
+-- ============================================================
+
+INSERT INTO Ventas
+(ClienteId, UsuarioId, NumeroVenta, Fecha, Subtotal, Descuento, IVA, Total, Estado, Observaciones)
+VALUES
+(1,1,'VTA-0001',GETDATE(),100,5,13,108,'Completada','Venta mostrador'),
+(2,2,'VTA-0002',GETDATE(),150,10,19.5,159.5,'Completada','Venta contado'),
+(3,3,'VTA-0003',GETDATE(),200,0,26,226,'Completada','Cliente frecuente'),
+(4,4,'VTA-0004',GETDATE(),80,0,10.4,90.4,'Completada','');
+
+
+-- ============================================================
+-- COMPRAS 
+-- ============================================================
+
+INSERT INTO Compras
+(ProveedorId, UsuarioId, NumeroCompra, Fecha, Total, Estado, Observaciones)
+VALUES
+(1,1,'CMP-0001',GETDATE(),500,'Recibida',''),
+(2,2,'CMP-0002',GETDATE(),800,'Recibida',''),
+(3,3,'CMP-0003',GETDATE(),1200,'Recibida',''),
+(4,4,'CMP-0004',GETDATE(),900,'Recibida','');
+
+-- ============================================================
+-- DETALLE VENTAS
+-- ============================================================
+
+INSERT INTO DetalleVentas
+(VentaId, ProductoId, Cantidad, PrecioUnitario, Descuento, Subtotal)
+VALUES
+(1,1,2,25,0,50),
+(2,2,1,150,10,140),
+(3,3,4,50,0,200),
+(4,4,2,40,0,80);
+
+-- ============================================================
+-- DETALLE COMPRAS
+-- ============================================================
+
+INSERT INTO DetalleCompras
+(CompraId, ProductoId, Cantidad, PrecioUnitario, Subtotal)
+VALUES
+(1,1,10,20,200),
+(2,2,15,30,450),
+(3,3,20,25,500),
+(4,4,10,40,400);
+
+Select * from Productos
+Select * from Proveedores
+Select * from Compras
+
+SELECT name
+FROM sys.triggers
+WHERE parent_id = OBJECT_ID('Productos');
+
+ALTER TABLE AuditoriaLog
+ALTER COLUMN Accion NVARCHAR(20) NOT NULL;
+GO
